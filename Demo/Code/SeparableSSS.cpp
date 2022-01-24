@@ -297,18 +297,21 @@ void SeparableSSS::calculateKernel() {
         kernel[i].z /= sum.z;
     }
 
-    // Tweak them using the desired strength. The first one is:
-    //     lerp(1.0, kernel[0].rgb, strength)
-    kernel[0].x = (1.0f - strength.x) * 1.0f + strength.x * kernel[0].x;
-    kernel[0].y = (1.0f - strength.y) * 1.0f + strength.y * kernel[0].y;
-    kernel[0].z = (1.0f - strength.z) * 1.0f + strength.z * kernel[0].z;
+    //if (!isArtistFriendlyModel)
+    {
+        //// Tweak them using the desired strength. The first one is:
+        ////     lerp(1.0, kernel[0].rgb, strength)
+        //kernel[0].x = (1.0f - strength.x) * 1.0f + strength.x * kernel[0].x;
+        //kernel[0].y = (1.0f - strength.y) * 1.0f + strength.y * kernel[0].y;
+        //kernel[0].z = (1.0f - strength.z) * 1.0f + strength.z * kernel[0].z;
 
-    // The others:
-    //     lerp(0.0, kernel[0].rgb, strength)
-    for (int i = 1; i < nSamples; i++) {
-        kernel[i].x *= strength.x;
-        kernel[i].y *= strength.y;
-        kernel[i].z *= strength.z;
+        //// The others:
+        ////     lerp(0.0, kernel[0].rgb, strength)
+        //for (int i = 1; i < nSamples; i++) {
+        //    kernel[i].x *= strength.x;
+        //    kernel[i].y *= strength.y;
+        //    kernel[i].z *= strength.z;
+        //}
     }
 
     // Finally, set 'em!
