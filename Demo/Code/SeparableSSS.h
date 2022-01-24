@@ -160,9 +160,23 @@ class SeparableSSS {
          */
         std::string getKernelCode() const;
 
+        void setWideRadius(D3DXVECTOR3 value) { this->radiusRGB = value; calculateKernel(); }
+        D3DXVECTOR3 getWideRadius() const { return this->radiusRGB; }
+
+        void setNarrowRadius(float value) { this->narrowRadius = value; calculateKernel(); }
+        float getNarrowRadius() const { return this->narrowRadius; }
+
+        void setNarrowStrength(D3DXVECTOR3 value) { this->narrowStrength = value; calculateKernel(); }
+        D3DXVECTOR3 getNarrowStrength() const { return this->narrowStrength; }
+
+        void setArtistFrendlyModel(bool value) { this->isArtistFriendlyModel = value; calculateKernel(); }
+        bool getArtistFrendlyModel() const { return this->isArtistFriendlyModel; }
+
     private:
         D3DXVECTOR3 gaussian(float variance, float r);
+        D3DXVECTOR3 gaussian(const D3DXVECTOR3& variance, float r);
         D3DXVECTOR3 profile(float r);
+        D3DXVECTOR3 profile(const D3DXVECTOR3& radiusRGB, float narrowRadius, const D3DXVECTOR3& narrowStrength, float r);
         void calculateKernel();
 
         ID3D10Device *device;
@@ -182,6 +196,11 @@ class SeparableSSS {
         ID3D10EffectVectorVariable *kernelVariable;
         ID3D10EffectShaderResourceVariable *colorTexVariable, *depthTexVariable, *strengthTexVariable;
         ID3D10EffectTechnique *technique;
+
+        bool isArtistFriendlyModel;
+        D3DXVECTOR3 radiusRGB;
+        float narrowRadius;
+        D3DXVECTOR3 narrowStrength;
 };
 
 #endif

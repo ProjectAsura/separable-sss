@@ -67,6 +67,14 @@ using namespace std;
 #endif
 #pragma endregion
 
+D3DXVECTOR3 operator * (const D3DXVECTOR3& lhs, const D3DXVECTOR3& rhs)
+{
+    return D3DXVECTOR3(
+        lhs.x * rhs.x,
+        lhs.y * rhs.y,
+        lhs.z * rhs.z);
+}
+
 #pragma region This stuff is for loading headers from resources
 class ID3D10IncludeResource : public ID3D10Include {
     public:
@@ -103,7 +111,12 @@ SeparableSSS::SeparableSSS(ID3D10Device *device,
                            nSamples(nSamples),
                            stencilInitialized(stencilInitialized),
                            strength(D3DXVECTOR3(0.48f, 0.41f, 0.28f)),
-                           falloff(D3DXVECTOR3(1.0f, 0.37f, 0.3f)) {
+                           falloff(D3DXVECTOR3(1.0f, 0.37f, 0.3f)),
+                           isArtistFriendlyModel(true),
+                           radiusRGB(D3DXVECTOR3(1.0f, 0.5f, 0.05f)),
+                           narrowRadius(0.183f),
+                           narrowStrength(D3DXVECTOR3(0.2f, 0.4f, 0.0f))
+{
     HRESULT hr;
 
     // Setup the defines for compiling the effect:
@@ -183,6 +196,15 @@ D3DXVECTOR3 SeparableSSS::gaussian(float variance, float r) {
     return g;
 }
 
+D3DXVECTOR3 SeparableSSS::gaussian(const D3DXVECTOR3& variance, float r) {
+    D3DXVECTOR3 g;
+    float r2 = r * r;
+    g.x = exp(-0.5f * r2 / variance.x) / (sqrt(2.0f * 3.14 * variance.x));
+    g.y = exp(-0.5f * r2 / variance.y) / (sqrt(2.0f * 3.14 * variance.y));
+    g.z = exp(-0.5f * r2 / variance.z) / (sqrt(2.0f * 3.14 * variance.z));
+    return g;
+}
+
 
 D3DXVECTOR3 SeparableSSS::profile(float r) {
     /**
@@ -201,6 +223,18 @@ D3DXVECTOR3 SeparableSSS::profile(float r) {
                0.078f * gaussian(  7.41f, r);
 } 
 
+// [Jimenez 2013] Jorge Jimenez, Javier von der Pahlen, 
+// "Next Generation Characnter Rendering", GDC 2013, Slide.147.
+D3DXVECTOR3 SeparableSSS::profile(
+    const D3DXVECTOR3& radiusRGB,
+    float narrowRadius,
+    const D3DXVECTOR3& narrowStrength,
+    float r) {
+    D3DXVECTOR3 wideVariance   = radiusRGB * radiusRGB;
+    D3DXVECTOR3 narrowVariance = (narrowRadius * radiusRGB) * (narrowRadius * radiusRGB);
+    return gaussian(wideVariance,   r) * (D3DXVECTOR3(1.0f, 1.0f, 1.0f) - narrowStrength)
+         + gaussian(narrowVariance, r) * narrowStrength;
+}
 
 void SeparableSSS::calculateKernel() {
     HRESULT hr;
@@ -218,16 +252,32 @@ void SeparableSSS::calculateKernel() {
         kernel[i].w = RANGE * sign * abs(pow(o, EXPONENT)) / pow(RANGE, EXPONENT);
     }
 
-    // Calculate the weights:
-    for (int i = 0; i < nSamples; i++) {
-        float w0 = i > 0? abs(kernel[i].w - kernel[i - 1].w) : 0.0f;
-        float w1 = i < nSamples - 1? abs(kernel[i].w - kernel[i + 1].w) : 0.0f;
-        float area = (w0 + w1) / 2.0f;
-        D3DXVECTOR3 t = area * profile(kernel[i].w);
-        kernel[i].x = t.x;
-        kernel[i].y = t.y;
-        kernel[i].z = t.z;
+    //if (isArtistFriendlyModel)
+    {
+        // Calculate the weights:
+        for (int i = 0; i < nSamples; i++) {
+            float w0 = i > 0? abs(kernel[i].w - kernel[i - 1].w) : 0.0f;
+            float w1 = i < nSamples - 1? abs(kernel[i].w - kernel[i + 1].w) : 0.0f;
+            float area = (w0 + w1) / 2.0f;
+            D3DXVECTOR3 t = area * profile(radiusRGB, narrowRadius, narrowStrength, kernel[i].w);
+            kernel[i].x = t.x;
+            kernel[i].y = t.y;
+            kernel[i].z = t.z;
+        }
     }
+    //else
+    //{
+    //    // Calculate the weights:
+    //    for (int i = 0; i < nSamples; i++) {
+    //        float w0 = i > 0? abs(kernel[i].w - kernel[i - 1].w) : 0.0f;
+    //        float w1 = i < nSamples - 1? abs(kernel[i].w - kernel[i + 1].w) : 0.0f;
+    //        float area = (w0 + w1) / 2.0f;
+    //        D3DXVECTOR3 t = area * profile(kernel[i].w);
+    //        kernel[i].x = t.x;
+    //        kernel[i].y = t.y;
+    //        kernel[i].z = t.z;
+    //    }
+    //}
 
     // We want the offset 0.0 to come first:
     D3DXVECTOR4 t = kernel[nSamples / 2];

@@ -241,6 +241,24 @@ State state = STATE_RUNNING;
 #define IDC_LIGHT1_BUTTON        52
 #define IDC_LIGHT1_LABEL         (53 + 5)
 #define IDC_LIGHT1               (54 + 5 * 2)
+
+#define IDC_WIDE_RADIUS_LABEL           70
+#define IDC_WIDE_RADIUS_R               71
+#define IDC_WIDE_RADIUS_R_LABEL         72
+#define IDC_WIDE_RADIUS_G               73
+#define IDC_WIDE_RADIUS_G_LABEL         74
+#define IDC_WIDE_RADIUS_B               75
+#define IDC_WIDE_RADIUS_B_LABEL         76
+#define IDC_NARROW_RADIUS               77
+#define IDC_NARROW_RADIUS_LABEL         78
+#define IDC_NARROW_STRENGTH_LABEL       79
+#define IDC_NARROW_STRENGTH_R           80
+#define IDC_NARROW_STRENGTH_R_LABEL     81
+#define IDC_NARROW_STRENGTH_G           82
+#define IDC_NARROW_STRENGTH_G_LABEL     83
+#define IDC_NARROW_STRENGTH_B           84
+#define IDC_NARROW_STRENGTH_B_LABEL     85
+#define IDC_ARTIST_FRIENDLY_MODEL       86
 #pragma endregion
 
 
@@ -862,19 +880,41 @@ void setupSSS(ID3D10Device *device, const DXGI_SURFACE_DESC *desc) {
 
     smaa = new SMAA(device, desc->Width, desc->Height, SMAA::PRESET_HIGH, true, true);
 
-    D3DXVECTOR3 strength;
-    mainHud.GetSlider(IDC_STRENGTH_R)->GetRange(min, max);
-    strength.x = float(mainHud.GetSlider(IDC_STRENGTH_R)->GetValue()) / (max - min);
-    strength.y = float(mainHud.GetSlider(IDC_STRENGTH_G)->GetValue()) / (max - min);
-    strength.z = float(mainHud.GetSlider(IDC_STRENGTH_B)->GetValue()) / (max - min);
-    separableSSS->setStrength(strength);
-    
-    D3DXVECTOR3 falloff;
-    mainHud.GetSlider(IDC_FALLOFF_R)->GetRange(min, max);
-    falloff.x = float(mainHud.GetSlider(IDC_FALLOFF_R)->GetValue()) / (max - min);
-    falloff.y = float(mainHud.GetSlider(IDC_FALLOFF_G)->GetValue()) / (max - min);
-    falloff.z = float(mainHud.GetSlider(IDC_FALLOFF_B)->GetValue()) / (max - min);
-    separableSSS->setFalloff(falloff);
+    //D3DXVECTOR3 strength;
+    //mainHud.GetSlider(IDC_STRENGTH_R)->GetRange(min, max);
+    //strength.x = float(mainHud.GetSlider(IDC_STRENGTH_R)->GetValue()) / (max - min);
+    //strength.y = float(mainHud.GetSlider(IDC_STRENGTH_G)->GetValue()) / (max - min);
+    //strength.z = float(mainHud.GetSlider(IDC_STRENGTH_B)->GetValue()) / (max - min);
+    //separableSSS->setStrength(strength);
+    //
+    //D3DXVECTOR3 falloff;
+    //mainHud.GetSlider(IDC_FALLOFF_R)->GetRange(min, max);
+    //falloff.x = float(mainHud.GetSlider(IDC_FALLOFF_R)->GetValue()) / (max - min);
+    //falloff.y = float(mainHud.GetSlider(IDC_FALLOFF_G)->GetValue()) / (max - min);
+    //falloff.z = float(mainHud.GetSlider(IDC_FALLOFF_B)->GetValue()) / (max - min);
+    //separableSSS->setFalloff(falloff);
+
+    //bool isArtistFriendlyModel = mainHud.GetCheckBox(IDC_ARTIST_FRIENDLY_MODEL)->GetChecked();
+    //separableSSS->setArtistFrendlyModel(isArtistFriendlyModel);
+
+    D3DXVECTOR3 wideRadius;
+    mainHud.GetSlider(IDC_WIDE_RADIUS_R)->GetRange(min, max);
+    wideRadius.x = float(mainHud.GetSlider(IDC_WIDE_RADIUS_R)->GetValue()) / (max - min);
+    wideRadius.y = float(mainHud.GetSlider(IDC_WIDE_RADIUS_G)->GetValue()) / (max - min);
+    wideRadius.z = float(mainHud.GetSlider(IDC_WIDE_RADIUS_B)->GetValue()) / (max - min);
+    separableSSS->setWideRadius(wideRadius);
+
+    float narrowRadius;
+    mainHud.GetSlider(IDC_NARROW_RADIUS)->GetRange(min, max);
+    narrowRadius = float(mainHud.GetSlider(IDC_NARROW_RADIUS)->GetValue()) / (max - min);
+    separableSSS->setNarrowRadius(narrowRadius);
+
+    D3DXVECTOR3 narrowStrength;
+    mainHud.GetSlider(IDC_NARROW_STRENGTH_R)->GetRange(min, max);
+    narrowStrength.x = float(mainHud.GetSlider(IDC_NARROW_STRENGTH_R)->GetValue()) / (max - min);
+    narrowStrength.y = float(mainHud.GetSlider(IDC_NARROW_STRENGTH_G)->GetValue()) / (max - min);
+    narrowStrength.z = float(mainHud.GetSlider(IDC_NARROW_STRENGTH_B)->GetValue()) / (max - min);
+    separableSSS->setNarrowStrength(narrowStrength);
 }
 
 
@@ -1248,8 +1288,8 @@ void CALLBACK onGUIEvent(UINT event, int id, CDXUTControl *control, void *contex
         case IDC_STRENGTH_B: {
             D3DXVECTOR3 strength; 
             strength.x = updateSlider(mainHud, IDC_STRENGTH_R, IDC_STRENGTH_R_LABEL, 1.0f, L"R: ");
-            strength.y = updateSlider(mainHud, IDC_STRENGTH_G, IDC_STRENGTH_G_LABEL, 1.0f, L"G: "); 
-            strength.z = updateSlider(mainHud, IDC_STRENGTH_B, IDC_STRENGTH_B_LABEL, 1.0f, L"B: ");  
+            strength.y = updateSlider(mainHud, IDC_STRENGTH_G, IDC_STRENGTH_G_LABEL, 1.0f, L"G: ");
+            strength.z = updateSlider(mainHud, IDC_STRENGTH_B, IDC_STRENGTH_B_LABEL, 1.0f, L"B: ");
             separableSSS->setStrength(strength);
             break;
         }
@@ -1263,6 +1303,37 @@ void CALLBACK onGUIEvent(UINT event, int id, CDXUTControl *control, void *contex
             separableSSS->setFalloff(falloff);
             break;
         }
+        case IDC_WIDE_RADIUS_R:
+        case IDC_WIDE_RADIUS_G:
+        case IDC_WIDE_RADIUS_B: {
+            D3DXVECTOR3 wideRadius;
+            wideRadius.x = updateSlider(mainHud, IDC_WIDE_RADIUS_R, IDC_WIDE_RADIUS_R_LABEL, 1.0f, L"R: ");
+            wideRadius.y = updateSlider(mainHud, IDC_WIDE_RADIUS_G, IDC_WIDE_RADIUS_G_LABEL, 1.0f, L"G: ");
+            wideRadius.z = updateSlider(mainHud, IDC_WIDE_RADIUS_B, IDC_WIDE_RADIUS_B_LABEL, 1.0f, L"B: ");
+            separableSSS->setWideRadius(wideRadius);
+            break;
+        }
+        case IDC_NARROW_RADIUS: {
+            float value = updateSlider(mainHud, IDC_NARROW_RADIUS, IDC_NARROW_RADIUS_LABEL, 1.0, L"Narrow Radius: ");
+            separableSSS->setNarrowRadius(value);
+            break;
+        }
+        case IDC_NARROW_STRENGTH_R:
+        case IDC_NARROW_STRENGTH_G:
+        case IDC_NARROW_STRENGTH_B: {
+            D3DXVECTOR3 narrowStrength;
+            narrowStrength.x = updateSlider(mainHud, IDC_NARROW_STRENGTH_R, IDC_NARROW_STRENGTH_R_LABEL, 1.0f, L"R: ");
+            narrowStrength.y = updateSlider(mainHud, IDC_NARROW_STRENGTH_G, IDC_NARROW_STRENGTH_G_LABEL, 1.0f, L"G: ");
+            narrowStrength.z = updateSlider(mainHud, IDC_NARROW_STRENGTH_B, IDC_NARROW_STRENGTH_B_LABEL, 1.0f, L"B: ");
+            separableSSS->setNarrowStrength(narrowStrength);
+            break;
+        }
+        case IDC_ARTIST_FRIENDLY_MODEL: {
+            bool value = mainHud.GetCheckBox(IDC_ARTIST_FRIENDLY_MODEL);
+            separableSSS->setArtistFrendlyModel(value);
+            break;
+        }
+
         case IDC_TRANSLUCENCY: {
             float value = updateSlider(mainHud, IDC_TRANSLUCENCY, IDC_TRANSLUCENCY_LABEL, 1.0f, L"Translucency: "); 
             V(mainEffect->GetVariableByName("translucency")->AsScalar()->SetFloat(value));
@@ -1590,27 +1661,52 @@ void initApp() {
     mainHud.AddStatic(IDC_SSSWIDTH_LABEL, L"SSS Width: 0.012", 35, iY += 24, HUD_WIDTH, 22);
     mainHud.AddSlider(IDC_SSSWIDTH, 35, iY += 24, HUD_WIDTH, 22, 0, 100, int((0.012f / 0.025f) * 100.0f));
 
-    iY += 15;
-    mainHud.AddStatic(IDC_STRENGTH_LABEL, L"SSS Strength", 35, iY += 24, HUD_WIDTH, 22);
-    mainHud.AddStatic(IDC_STRENGTH_R_LABEL, L"R: 0.48", 35, iY += 24, 50, 22);
-    mainHud.AddSlider(IDC_STRENGTH_R, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.48f * 100.0f));
-    mainHud.AddStatic(IDC_STRENGTH_G_LABEL, L"G: 0.41", 35, iY += 24, 50, 22);
-    mainHud.AddSlider(IDC_STRENGTH_G, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.41f * 100.0f));
-    mainHud.AddStatic(IDC_STRENGTH_B_LABEL, L"B: 0.28", 35, iY += 24, 50, 22);
-    mainHud.AddSlider(IDC_STRENGTH_B, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.28f * 100.0f));
+    //iY += 15;
+    //mainHud.AddStatic(IDC_STRENGTH_LABEL, L"SSS Strength", 35, iY += 24, HUD_WIDTH, 22);
+    //mainHud.AddStatic(IDC_STRENGTH_R_LABEL, L"R: 0.48", 35, iY += 24, 50, 22);
+    //mainHud.AddSlider(IDC_STRENGTH_R, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.48f * 100.0f));
+    //mainHud.AddStatic(IDC_STRENGTH_G_LABEL, L"G: 0.41", 35, iY += 24, 50, 22);
+    //mainHud.AddSlider(IDC_STRENGTH_G, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.41f * 100.0f));
+    //mainHud.AddStatic(IDC_STRENGTH_B_LABEL, L"B: 0.28", 35, iY += 24, 50, 22);
+    //mainHud.AddSlider(IDC_STRENGTH_B, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.28f * 100.0f));
 
-    iY += 15;
-    mainHud.AddStatic(IDC_FALLOFF_LABEL, L"SSS Falloff", 35, iY += 24, HUD_WIDTH, 22);
-    mainHud.AddStatic(IDC_FALLOFF_R_LABEL, L"R: 1.0", 35, iY += 24, 50, 22);
-    mainHud.AddSlider(IDC_FALLOFF_R, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(1.0f * 100.0f));
-    mainHud.AddStatic(IDC_FALLOFF_G_LABEL, L"G: 0.37", 35, iY += 24, 50, 22);
-    mainHud.AddSlider(IDC_FALLOFF_G, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.37f * 100.0f));
-    mainHud.AddStatic(IDC_FALLOFF_B_LABEL, L"B: 0.3", 35, iY += 24, 50, 22);
-    mainHud.AddSlider(IDC_FALLOFF_B, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.3f * 100.0f));
+    //iY += 15;
+    //mainHud.AddStatic(IDC_FALLOFF_LABEL, L"SSS Falloff", 35, iY += 24, HUD_WIDTH, 22);
+    //mainHud.AddStatic(IDC_FALLOFF_R_LABEL, L"R: 1.0", 35, iY += 24, 50, 22);
+    //mainHud.AddSlider(IDC_FALLOFF_R, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(1.0f * 100.0f));
+    //mainHud.AddStatic(IDC_FALLOFF_G_LABEL, L"G: 0.37", 35, iY += 24, 50, 22);
+    //mainHud.AddSlider(IDC_FALLOFF_G, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.37f * 100.0f));
+    //mainHud.AddStatic(IDC_FALLOFF_B_LABEL, L"B: 0.3", 35, iY += 24, 50, 22);
+    //mainHud.AddSlider(IDC_FALLOFF_B, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.3f * 100.0f));
 
     iY += 15;
     mainHud.AddStatic(IDC_TRANSLUCENCY_LABEL, L"Translucency: 0.83", 35, iY += 24, HUD_WIDTH, 22);
     mainHud.AddSlider(IDC_TRANSLUCENCY, 35, iY += 24, HUD_WIDTH, 22, 0, 100, int(0.83f * 100.0f));
+
+    //iY += 15;
+    //mainHud.AddCheckBox(IDC_ARTIST_FRIENDLY_MODEL, L"Artist Friendly Model", 35, iY+=24, HUD_WIDTH, 22, false);
+
+    //iY += 15;
+    mainHud.AddStatic(IDC_WIDE_RADIUS_LABEL, L"Wide Radius", 35, iY+= 34, HUD_WIDTH, 22);
+    mainHud.AddStatic(IDC_WIDE_RADIUS_R_LABEL, L"R: 1.0", 35, iY+= 24, 50, 22);
+    mainHud.AddSlider(IDC_WIDE_RADIUS_R, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(1.0f * 100.0f));
+    mainHud.AddStatic(IDC_WIDE_RADIUS_G_LABEL, L"G: 0.5", 35, iY+= 24, 50, 22);
+    mainHud.AddSlider(IDC_WIDE_RADIUS_G, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.5f * 100.0f));
+    mainHud.AddStatic(IDC_WIDE_RADIUS_B_LABEL, L"B: 0.05", 35, iY+= 24, 50, 22);
+    mainHud.AddSlider(IDC_WIDE_RADIUS_B, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.05f * 100.0f));
+
+    iY += 15;
+    mainHud.AddStatic(IDC_NARROW_RADIUS_LABEL, L"Narrow Radius : 0.183", 35, iY+=34, HUD_WIDTH, 22);
+    mainHud.AddSlider(IDC_NARROW_RADIUS, 35, iY+=24, HUD_WIDTH, 22, 0, 1000, int(0.183 * 1000.0f));
+
+    iY += 15;
+    mainHud.AddStatic(IDC_NARROW_STRENGTH_LABEL, L"Narrow Strength", 35, iY+=24, HUD_WIDTH, 22);
+    mainHud.AddStatic(IDC_NARROW_STRENGTH_R_LABEL, L"R: 0.2", 35, iY+= 24, 50, 22);
+    mainHud.AddSlider(IDC_NARROW_STRENGTH_R, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.2f * 100.0f));
+    mainHud.AddStatic(IDC_NARROW_STRENGTH_G_LABEL, L"G: 0.4", 35, iY+= 24, 50, 22);
+    mainHud.AddSlider(IDC_NARROW_STRENGTH_G, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.4f * 100.0f));
+    mainHud.AddStatic(IDC_NARROW_STRENGTH_B_LABEL, L"B: 0.0", 35, iY+= 24, 50, 22);
+    mainHud.AddSlider(IDC_NARROW_STRENGTH_B, 80, iY, HUD_WIDTH - 45, 22, 0, 100, int(0.0f * 100.0f));
 
     /**
      * Create the speculars and light step hud (the one on the left)
